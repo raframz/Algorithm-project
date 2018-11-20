@@ -1,23 +1,26 @@
 package manager;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.RandomAccessFile;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class FileEspecial {
-    final static int SIZE = 8; 
-    private final RandomAccessFile tool;
+    private final BufferedWriter bw;
+    final static int SIZE = 20000000; 
     private File xFile;
     private String name;
     private String id;
     private final int[] content;
     FileEspecial f;
 
-    public FileEspecial(String name, String id) throws FileNotFoundException {
+
+    public FileEspecial(String name, String id) throws FileNotFoundException, IOException {
         this.name = name;
         content = new int[SIZE];
-        this.xFile = new File("C:\\Users\\raframz\\Desktop\\Manager Files\\" + name);
-        tool = new RandomAccessFile(this.xFile, "rw");
+        this.xFile = new File("C:\\Users\\raframz\\Desktop\\Manager Files\\" + name);       
+        bw = new BufferedWriter(new FileWriter(xFile));
         this.id = id;
         fillFile();
         f = this;
@@ -72,33 +75,21 @@ public class FileEspecial {
         return content;
     }
 
-    private void fillFile() {
+    private void fillFile() throws IOException {
         fillArr();
-        try (RandomAccessFile r = new RandomAccessFile(xFile, "rw")) {
             for (int i = 0; i < content.length; i++) {
-                r.write(content[i]);
+                bw.write(content[i]);                
             }
-        } catch (Exception e) {
-        }
+            bw.flush();
+            bw.close();
     }
 
-    public void fillFile(int[] content) {
-        try (RandomAccessFile r = new RandomAccessFile(xFile, "rw")) {
+    public void fillFile(int[] content) throws IOException {
             for (int i = 0; i < content.length; i++) {
                 if(content[i]!=0){
-                r.write(content[i]);
+                bw.write(content[i]);
                 }
             }
-        } catch (Exception e) {
-        }
-    }
-
-    public File getX() {
-        return xFile;
-    }
-
-    public void setX(File xFile) {
-        this.xFile = xFile;
     }
 
     public String getId() {
@@ -111,10 +102,6 @@ public class FileEspecial {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int[] getContent() {
