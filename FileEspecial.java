@@ -8,22 +8,20 @@ import java.io.IOException;
 
 public class FileEspecial {
     private final BufferedWriter bw;
-    final static int SIZE = 20000000; 
-    private File xFile;
-    private String name;
+    final static int SIZE = 1000; 
+    private final File xFile;
+    private final String name;
     private String id;
     private final int[] content;
-    FileEspecial f;
 
 
     public FileEspecial(String name, String id) throws FileNotFoundException, IOException {
         this.name = name;
         content = new int[SIZE];
-        this.xFile = new File("C:\\Users\\raframz\\Desktop\\Manager Files\\" + name);       
+        xFile = new File("C:\\Users\\raframz\\Desktop\\Manager Files\\" + name);       
         bw = new BufferedWriter(new FileWriter(xFile));
         this.id = id;
         fillFile();
-        f = this;
     }
 
     
@@ -81,7 +79,6 @@ public class FileEspecial {
                 bw.write(content[i]);                
             }
             bw.flush();
-            bw.close();
     }
 
     public void fillFile(int[] content) throws IOException {
@@ -90,6 +87,7 @@ public class FileEspecial {
                 bw.write(content[i]);
                 }
             }
+            bw.flush();
     }
 
     public String getId() {
