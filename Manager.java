@@ -32,94 +32,112 @@ public class Manager {
     }
 
     //COMPILAR
-    public void compiler(String line) throws FileNotFoundException {
-        try {
-            String[] syntax = line.split(" ");
-            LINE++;
-            System.out.println("Evaluating: " + Arrays.toString(syntax));
-            if (syntax[0] != null) {
-
-                if (syntax[0].equals("create") && syntax[1] != null) { // Si vamos a crear
-                    String name = (syntax[1].substring(1, syntax[1].length() - 1));
-                    create(syntax, name);
-                    variable.add(syntax[3]);
-                    filename.add(name);
-
-                } else if (syntax[0].equals("assign")) { // Si vamos a assignar
-                    String name = (syntax[1].substring(1, syntax[1].length() - 1));
-                    assign(syntax, name);
-                    variable.add(syntax[3]);
-
-                } else if (variable.contains(syntax[0]) && syntax[1].equals("=")) {
-                    if (syntax.length == 5) {
-                        if (syntax[2].equals("sort") && syntax[4].equals("asc")) {
-                            sort(syntax);
-                        } else if (variable.contains(syntax[2]) && variable.contains(syntax[4])) {
-                            joinfiles(syntax);
-                        }
-                    } else if (syntax.length == 4 && syntax[2].equals("rem_doubles") && variable.contains(syntax[3])) {
-                        rem_doubles(syntax);
-
-                    } else if (syntax.length == 3 && variable.contains(syntax[2])) {
-                        equalize(syntax);
-
-                    } else if (!keyCommand.contains(syntax[0]) || keyCommand.contains(syntax[2])) {
-                        System.out.println("Syntax Error At Line " + LINE + " please check your commands");
-                        System.exit(0);
-                    } else {
-                        System.out.println("Syntax Error At Line " + LINE + " please check your commands");
-                        System.exit(0);
-                    }
+    public void compiler(String line) throws FileNotFoundException, IOException {
+        String[] syntax = line.split(" ");
+        LINE++;
+        //System.out.println("Evaluating: " + Arrays.toString(syntax));
+        if (syntax[0] != null) {
+            if (syntax.length == 5) {
+                if (variable.contains(syntax[2]) && syntax[1].equals("=")
+                        && variable.contains(syntax[4]) && syntax[3].equals("+")) {
+                    joinfiles(syntax);
+                    return;
                 }
             }
-        } catch (Exception e) {
-            System.out.println("Please check your entry");
-            System.exit(0);
+            if (syntax.length == 3 && variable.contains(syntax[2])
+                    && variable.contains(syntax[0]) && syntax[1].equals("=")) {
+                equalize(syntax);
+                return;
 
+            }
+
+            if (syntax[0].equals("create") && syntax[1] != null) { // Si vamos a crear
+                String name = (syntax[1].substring(1, syntax[1].length() - 1));
+                create(syntax, name);
+                variable.add(syntax[3]);
+                filename.add(name);
+
+            } else if (syntax[0].equals("assign")) { // Si vamos a assignar
+                String name = (syntax[1].substring(1, syntax[1].length() - 1));
+                assign(syntax, name);
+                variable.add(syntax[3]);
+
+            } else if (syntax[0].equals("assign") || syntax[2].equals("to")) {
+                System.out.println("ERROR AT LINE " + LINE);
+                System.exit(0);
+            }
+
+            if (variable.contains(syntax[0]) && syntax[1].equals("=")) {
+                if (syntax.length == 5) {
+                    if (syntax[2].equals("sort") && syntax[4].equals("asc")) {
+                        sort(syntax);
+                    } else {
+                        System.out.println("ERROR AT LINE " + LINE);
+                        System.exit(0);
+                    }
+                } else if (syntax.length == 4 && syntax[2].equals("rem_doubles") && variable.contains(syntax[3])) {
+                    rem_doubles(syntax);
+
+                } else if (!keyCommand.contains(syntax[0]) || keyCommand.contains(syntax[2])) {
+                    System.out.println("Syntax Error At Line " + LINE + " please check your commands");
+                    System.exit(0);
+                } else {
+                    System.out.println("Syntax Error At Line " + LINE + " please check your commands");
+                    System.exit(0);
+                }
+            }
         }
 
     }
 
     //CREAR
-    public void create(String[] line, String name) throws FileNotFoundException {
-            if (line.length < 4 || line.length > 4) {
-                System.out.println("Syntax Error");
-            } else if (!line[2].equals("as") || line[3].isEmpty()) {
-                System.out.println("Syntax Error");
-            }
-            FileEspecial f = new FileEspecial(name, line[3]);
-            files.put(line[3], f);
-            System.out.println("A NEW FILE HAS BEEN CREATED:\n" + f.toString() + "\n\n");
+    public void create(String[] line, String name) throws FileNotFoundException, IOException {
+        String x = line[1];
+        if (line.length < 4 || line.length > 4) {
+            System.out.println("Syntax Error Line " + LINE);
+        } else if (!line[2].equals("as") || line[3].isEmpty()) {
+            System.out.println("Syntax Error Line " + LINE);
+        } else if (!(x.charAt(0) == '"') || !(x.charAt(x.lastIndexOf(x)) == '"')) {
+            System.out.println("Syntax Error Line " + LINE);
+            System.exit(0);
+        }
+        FileEspecial f = new FileEspecial(name, line[3]);
+        files.put(line[3], f);
+        System.out.println("A NEW FILE HAS BEEN CREATED:\n" + f.toString() + "\n\n");
 
     }
 
     //ASIGNAR
     public void assign(String[] line, String name) throws FileNotFoundException {
-            if (line.length < 4 || line.length > 4) {
-                System.out.println("Syntax Error");
-            }
-            if (!line[2].equals("to") || line[3].isEmpty()) {
-                System.out.println("Syntax Error");
-            }
-            if (filename.contains(name)) {
-                Enumeration<String> keys = files.keys();
-                while (keys.hasMoreElements()) {
-                    String key = keys.nextElement();
-                    //    si el nombre de un archivo          
-                    if (files.get(key).getName().equals(name)) {
-                        System.out.println("THE FILE ID HAS BEEN MODIFIED: \n"
-                                + files.get(key).toString());
-                        files.get(key).setId(line[3]);
-                        System.out.println("NOW WITH THE NEW ID: \n" + files.get(key).toString() + "\n\n");
-                    }
+        String x = line[1];
+        if (line.length < 4 || line.length > 4) {
+            System.out.println("Syntax Error");
+        }
+        if (!line[2].equals("to") || line[3].isEmpty()) {
+            System.out.println("Syntax Error");
+        } else if (!(x.charAt(0) == '"') || !(x.charAt(x.lastIndexOf(x)) == '"')) {
+            System.out.println("Syntax Error Line " + LINE);
+            System.exit(0);
+        }
+        if (filename.contains(name)) {
+            Enumeration<String> keys = files.keys();
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                //    si el nombre de un archivo          
+                if (files.get(key).getName().equals(name)) {
+                    System.out.println("THE FILE ID HAS BEEN MODIFIED: \n"
+                            + files.get(key).toString());
+                    files.get(key).setId(line[3]);
+                    System.out.println("NOW WITH THE NEW ID: \n" + files.get(key).toString() + "\n\n");
                 }
-            } else {
-                System.out.println("The File " + name + " is not in the directory");
             }
+        } else {
+            System.out.println("The File " + name + " is not in the directory");
+        }
     }
 
     //SORT
-    public void sort(String[] line) {
+    public void sort(String[] line) throws IOException {
         Enumeration<String> keys = files.keys();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
@@ -132,7 +150,7 @@ public class Manager {
     }
 
     //REM_DOUBLES
-    public void rem_doubles(String[] line) {
+    public void rem_doubles(String[] line) throws IOException {
         String key = "";
         int[] aux = new int[FileEspecial.SIZE];
         Enumeration<String> keys = files.keys();
@@ -156,7 +174,7 @@ public class Manager {
     }
 
     //SET EQUALS
-    public void equalize(String[] line) {
+    public void equalize(String[] line) throws IOException {
         String key = "";
         int[] aux = new int[FileEspecial.SIZE];
         Enumeration<String> keys = files.keys();
@@ -180,7 +198,7 @@ public class Manager {
     }
 
 //SUMAR VARIABLES
-    public void joinfiles(String[] line) {
+    public void joinfiles(String[] line) throws IOException {
         String key = "";
         int[] contentA = new int[FileEspecial.SIZE];
         int[] contentB = new int[FileEspecial.SIZE];
@@ -211,7 +229,7 @@ public class Manager {
             if (files.get(key).getId().equals(line[0])) {
                 files.get(key).fillFile(contentFinal);
                 System.out.println("THE CONTENT HAS BEEN UNITED "
-                        + line[2] + " & " + line[4] + "\nEN THE FILE: " + files.get(key).toString());
+                        + line[2] + " & " + line[4] + "\nEN THE FILE: " + files.get(key).toString() + "\n\n");
             }
         }
 
@@ -234,7 +252,6 @@ public class Manager {
     }
 
 }
-
 /*
 create "ans.txt" as file_out
 create "tmp.txt" as tmp
